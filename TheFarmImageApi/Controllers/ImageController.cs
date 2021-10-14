@@ -130,21 +130,22 @@ namespace TheFarmImageApi.Controllers
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        [HttpGet("ImageFile/{id}")] 
+        [HttpGet("ImageFile/{id}")]
         public IActionResult GetImageFile([Required] int id)
         {
             //Run a select on our database and get the ImageMetaData so we can return the correct Image
             // SELECT * FROM imageMetaData WHERE id = @id something like that
             string fileName = "test.png";
 
-            FileStream fileStream = new FileStream(fileName, FileMode.Open);
+            using (FileStream fileStream = new FileStream(fileName, FileMode.Open))
+            { 
+                if (new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider().TryGetContentType(Path.GetFileName(fileStream.Name), out string mimeType) == false)
+                {
+                    mimeType = "application/octet-stream";
+                }
 
-            if (new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider().TryGetContentType(Path.GetFileName(fileStream.Name), out string mimeType) == false)
-            {
-                mimeType = "application/octet-stream";
+                return File(fileStream, mimeType);
             }
-
-            return File(fileStream, mimeType);
         }
     }
 }
